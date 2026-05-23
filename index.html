@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SUDOKU — Lógica & Elegância</title>
+  
+  <!-- Fontes Premium -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Google GSI Library -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Textura de Ruído CSS -->
+  <div class="noise-overlay"></div>
+
+  <!-- Header Global -->
+  <header class="global-header">
+    <div class="header-left">
+      <span class="logo-text mini-logo">SUDOKU</span>
+    </div>
+    <div class="header-right">
+      <!-- Botão Login Google -->
+      <div id="google-login-container">
+        <div id="g_id_onload"
+             data-client_id="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"
+             data-context="signin"
+             data-ux_mode="popup"
+             data-callback="handleCredentialResponse"
+             data-auto_prompt="false">
+        </div>
+        <div class="g_id_signin"
+             data-type="standard"
+             data-shape="rectangular"
+             data-theme="dark"
+             data-text="signin_with"
+             data-size="medium"
+             data-logo_alignment="left">
+        </div>
+      </div>
+      <!-- User Profile (inicialmente oculto) -->
+      <div id="user-profile" class="hidden">
+        <img id="user-avatar" src="" alt="Avatar">
+        <span id="user-name-display">Usuário</span>
+        <button id="btn-logout" class="btn-text-only" onclick="logoutGoogle()">Sair</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Container Principal das Telas -->
+  <main class="main-container">
+    
+    <!-- TELA INICIAL -->
+    <section id="screen-home" class="screen">
+      <div class="home-hero">
+        <h1 class="logo-title fade-in">SUDOKU</h1>
+        <p class="subtitle">Lógica. Paciência. Precisão.</p>
+        
+        <div class="home-actions">
+          <button class="btn btn-primary" onclick="showDifficultyModal()">Novo Jogo</button>
+          <button id="btn-show-history" class="btn btn-secondary hidden" onclick="showHistoryModal()">Histórico de Partidas</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- TELA DO JOGO -->
+    <section id="screen-game" class="screen hidden">
+      <!-- Painel de Status do Topo -->
+      <div class="game-header">
+        <div class="header-status-item">
+          <span class="status-label">DIFICULDADE</span>
+          <span id="game-difficulty-display" class="status-value">Médio</span>
+        </div>
+        
+        <div class="header-status-item timer-container">
+          <span class="status-label">TEMPO</span>
+          <div class="timer-wrapper">
+            <span id="game-timer" class="status-value monospace-font">00:00</span>
+            <button id="btn-pause" class="btn-icon" onclick="pauseGame()" title="Pausar Jogo">
+              <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="header-status-item">
+          <span class="status-label">PONTUAÇÃO</span>
+          <span id="game-score-display" class="status-value monospace-font">0000</span>
+        </div>
+      </div>
+
+      <!-- Tabuleiro 9x9 -->
+      <div class="board-wrapper">
+        <div id="sudoku-board" class="sudoku-grid">
+          <!-- Células geradas via JavaScript -->
+        </div>
+      </div>
+
+      <!-- Teclado Numérico Mobile / Customizado -->
+      <div class="mobile-keyboard">
+        <button class="keypad-btn" onclick="handleKeypadInput(1)">1</button>
+        <button class="keypad-btn" onclick="handleKeypadInput(2)">2</button>
+        <button class="keypad-btn" onclick="handleKeypadInput(3)">3</button>
+        <button class="keypad-btn" onclick="handleKeypadInput(4)">4</button>
+        <button class="keypad-btn" onclick="handleKeypadInput(5)">5</button>
+        <button class="keypad-btn" onclick="handleKeypadInput(6)">6</button>
+        <button class="keypad-btn" onclick="handleKeypadInput(7)">7</button>
+        <button class="keypad-btn" onclick="handleKeypadInput(8)">8</button>
+        <button class="keypad-btn" onclick="handleKeypadInput(9)">9</button>
+        <button class="keypad-btn delete-key" onclick="handleKeypadInput(null)" title="Apagar">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M22 3H7c-.69 0-1.23.35-1.59.88L0 12l5.41 8.11c.36.53.9.89 1.59.89h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H7.07L2.4 12l4.66-7H22v14zm-11.59-2L14 13.41 17.59 17 19 15.59 15.41 12 19 8.41 17.59 7 14 10.59 10.41 7 9 8.41 12.59 12 9 15.59 10.41 17z"/></svg>
+        </button>
+      </div>
+
+      <!-- Rodapé do Jogo -->
+      <footer class="game-footer">
+        <div class="footer-stats">
+          <span>Erros: <span id="error-hearts">❤️❤️❤️</span></span>
+          <span class="divider">|</span>
+          <span>Dificuldade: <span id="footer-difficulty">Médio</span></span>
+        </div>
+      </footer>
+    </section>
+
+  </main>
+
+  <!-- ================= MODAIS & OVERLAYS ================= -->
+
+  <!-- Modal: Escolha a Dificuldade -->
+  <div id="modal-difficulty" class="modal-overlay">
+    <div class="modal scale-in">
+      <h2 class="modal-title">Escolha a Dificuldade</h2>
+      <div class="difficulty-options">
+        <button class="diff-btn easy" onclick="startGame('easy')">
+          <span class="diff-icon">🟢</span>
+          <div class="diff-info">
+            <span class="diff-label">Fácil</span>
+            <span class="diff-desc">Para aquecer a mente. (35-40 revelados)</span>
+          </div>
+        </button>
+        <button class="diff-btn medium" onclick="startGame('medium')">
+          <span class="diff-icon">🟡</span>
+          <div class="diff-info">
+            <span class="diff-label">Médio</span>
+            <span class="diff-desc">Equilíbrio perfeito de lógica. (27-34 revelados)</span>
+          </div>
+        </button>
+        <button class="diff-btn hard" onclick="startGame('hard')">
+          <span class="diff-icon">🔴</span>
+          <div class="diff-info">
+            <span class="diff-label">Difícil</span>
+            <span class="diff-desc">Desafio intenso de paciência. (20-26 revelados)</span>
+          </div>
+        </button>
+      </div>
+      <button class="btn btn-secondary close-modal-btn" onclick="closeDifficultyModal()">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- Modal: Pausa -->
+  <div id="modal-pause" class="modal-overlay">
+    <div class="modal scale-in text-center">
+      <div class="pause-icon-big">⏸</div>
+      <h2 class="modal-title">Jogo Pausado</h2>
+      <p class="modal-subtitle">O tempo está congelado.</p>
+      <button class="btn btn-primary" onclick="resumeGame()">▶ Continuar o Jogo</button>
+    </div>
+  </div>
+
+  <!-- Modal: Jogo Encerrado (Derrota) -->
+  <div id="modal-gameover" class="modal-overlay">
+    <div class="modal scale-in text-center">
+      <div class="gameover-icon">💔</div>
+      <h2 class="modal-title text-danger">Jogo Encerrado</h2>
+      <p class="modal-subtitle">Você cometeu 3 erros nesta partida.</p>
+      <div class="stats-summary">
+        <p>Pontuação Final: <span id="gameover-score" class="monospace-font text-gold">0</span></p>
+      </div>
+      <div class="modal-actions-stacked">
+        <button class="btn btn-primary" onclick="restartCurrentGame()">Tentar Novamente</button>
+        <button class="btn btn-secondary" onclick="backToHome()">Novo Jogo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Vitória -->
+  <div id="modal-victory" class="modal-overlay">
+    <div class="modal scale-in text-center">
+      <div class="victory-icon-bounce">🏆</div>
+      <h2 class="modal-title text-gold">Parabéns!</h2>
+      <p class="modal-subtitle">Você resolveu o Sudoku com perfeição.</p>
+      <div class="victory-stats">
+        <div class="victory-stat-item">
+          <span class="stat-label">Tempo</span>
+          <span id="victory-time" class="stat-val monospace-font">00:00</span>
+        </div>
+        <div class="victory-stat-item">
+          <span class="stat-label">Pontuação</span>
+          <span id="victory-score" class="stat-val monospace-font">0000</span>
+        </div>
+        <div class="victory-stat-item">
+          <span class="stat-label">Dificuldade</span>
+          <span id="victory-difficulty" class="stat-val">Médio</span>
+        </div>
+      </div>
+      <p id="victory-login-notice" class="login-notice hidden">Partida salva no seu histórico!</p>
+      <div class="modal-actions-stacked">
+        <button class="btn btn-primary" onclick="backToHome()">Novo Jogo</button>
+        <button id="btn-victory-history" class="btn btn-secondary hidden" onclick="showHistoryModal()">Ver Histórico</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Histórico de Partidas -->
+  <div id="modal-history" class="modal-overlay">
+    <div class="modal scale-in">
+      <h2 class="modal-title">Histórico de Partidas</h2>
+      <div class="history-table-container">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Dificuldade</th>
+              <th>Tempo</th>
+              <th>Score</th>
+              <th>Resultado</th>
+            </tr>
+          </thead>
+          <tbody id="history-rows">
+            <!-- Inserido dinamicamente -->
+          </tbody>
+        </table>
+        <div id="history-empty-msg" class="empty-message hidden">
+          Nenhuma partida registrada ainda.
+        </div>
+      </div>
+      <div class="history-footer">
+        <button class="btn btn-secondary" onclick="closeHistoryModal()">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
