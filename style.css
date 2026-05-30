@@ -461,6 +461,14 @@ body {
   color: var(--text-incorrect);
 }
 
+.disabled-key {
+  opacity: 0.15 !important;
+  pointer-events: none;
+  background-color: transparent !important;
+  border-color: rgba(255, 255, 255, 0.05) !important;
+  color: var(--text-muted) !important;
+}
+
 /* ================= MODAIS & INTERFACES ================= */
 
 .modal-overlay {
@@ -752,13 +760,6 @@ body {
 }
 
 /* ================= RESPONSIVIDADE ================= */
-
-/* Desktops e Monitores Médios */
-@media (min-width: 992px) {
-  .mobile-keyboard {
-    display: none; /* Teclado físico é recomendado */
-  }
-}
 
 /* Ajustes para telas bem pequenas */
 @media (max-width: 360px) {

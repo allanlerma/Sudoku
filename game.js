@@ -272,6 +272,8 @@ function renderBoard() {
       boardEl.appendChild(cellEl);
     }
   }
+  
+  updateKeyboardNumbers();
 }
 
 // Seleciona uma célula e aplica destaque de linha, coluna e bloco
@@ -427,9 +429,33 @@ function inputNumber(r, c, num) {
   }
   
   updateScoreDisplay();
+  updateKeyboardNumbers();
   
   // Atualiza highlights de valores duplicados na tela
   selectCell(r, c);
+}
+
+// Atualiza o estado dos botões do teclado numérico
+function updateKeyboardNumbers() {
+  const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0 };
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      const val = gameState.board[r][c];
+      if (val !== 0 && val === gameState.solution[r][c]) {
+        counts[val]++;
+      }
+    }
+  }
+
+  const buttons = document.querySelectorAll('.keypad-btn:not(.delete-key)');
+  buttons.forEach(btn => {
+    const num = parseInt(btn.innerText);
+    if (counts[num] >= 9) {
+      btn.classList.add('disabled-key');
+    } else {
+      btn.classList.remove('disabled-key');
+    }
+  });
 }
 
 // Atualiza o painel de erros
